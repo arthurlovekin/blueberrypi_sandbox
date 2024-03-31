@@ -2,13 +2,15 @@ from picamera2.encoders import H264Encoder, Quality
 from picamera2.outputs import CircularOutput
 from picamera2 import Picamera2
 from time import localtime, strftime
+from pathlib import Path
 
 class RocketCamera():
     def __init__(self, port_index, name=None, output_file=None):
         self.index = port_index
         self.name = name if name is not None else f"cam{port_index}"
         time_str = strftime(f"%Y-%m-%d_%H-%M-%S", localtime())
-        self.output_file = output_file if output_file is not None else f"{time_str}_{self.name}.mjpg"
+        new_output_file = Path(Path.home(), "Videos", f"{time_str}_{self.name}.h264")
+        self.output_file = output_file if output_file is not None else new_output_file
         self.picam = Picamera2(self.index)
 
         config = self.picam.create_video_configuration(sensor={'output_size':(2304,1296), 'bit_depth':10},
@@ -26,3 +28,4 @@ class RocketCamera():
     def stop_recording(self):
         self.output.stop()
         self.picam.stop_recording()
+        print(f"Saved video to {self.output_file}")
