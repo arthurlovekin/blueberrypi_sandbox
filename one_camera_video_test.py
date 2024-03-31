@@ -1,6 +1,6 @@
 from picamera2 import Picamera2, Preview
 from time import sleep
-from picamera2.encoders import H264Encoder, MJPEGEncoder
+from picamera2.encoders import H264Encoder, MJPEGEncoder, Quality
 from libcamera import Transform
 from time import sleep, localtime, strftime
 from picamera2.outputs import CircularOutput
@@ -15,13 +15,13 @@ ffplay 2024-03-31_11-35-00_cam0.mjpg
 # create camera objects
 picam0 = Picamera2(0)
 
-# start a preview window
-picam0.start_preview(Preview.QTGL,
-                     x=100, 
-                     y=200, 
-                     width=800, 
-                     height=600,
-                     transform=Transform(hflip=False))
+# # start a preview window
+# picam0.start_preview(Preview.QTGL,
+#                      x=100, 
+#                      y=200, 
+#                      width=800, 
+#                      height=600,
+#                      transform=Transform(hflip=False))
 
 # Set configuration for video
 """
@@ -68,14 +68,14 @@ A 5 second video
 """
 
 # # Can this encoder handle 2 cameras at 60fps with 1080p? Probably not.
-# encoder = H264Encoder(bitrate=10000000)
+# encoder = H264Encoder(bitrate=10000000) # only supports up to 1080p30
 encoder = MJPEGEncoder()
 time_str = strftime(f"%Y-%m-%d_%H-%M-%S", localtime())
 output_file = f"results/{time_str}_cam.mjpg"
 buffer_frames = 120 # 60 fps * 2 seconds
 output = CircularOutput(buffersize=buffer_frames)
 
-picam0.start_recording(encoder, output)
+picam0.start_recording(encoder, output, quality=Quality.MEDIUM)
 
 print("Phase 1: On the launchpad...")
 for i in range(10,0,-1):

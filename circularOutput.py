@@ -4,7 +4,7 @@ from picamera2 import Picamera2
 from time import sleep
 
 """
-Summary: Both Encoders work with the CircularOutput (one camera)
+Summary: Both H264Encoder and MJPEGEncoder work with the CircularOutput (one camera)
 The encoders in both cases seem to be limited to 30fps:
     With the MJPEGEncoder playback was normal speed (maybe slightly slow)
      but the default buffer of 150 led to a 5 second buffer indicating 30fps
