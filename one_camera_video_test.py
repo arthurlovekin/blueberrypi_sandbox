@@ -3,6 +3,7 @@ from time import sleep
 from picamera2.encoders import H264Encoder, MJPEGEncoder
 from libcamera import Transform
 from time import sleep, localtime, strftime
+from picamera2.outputs import CircularOutput
 
 """
 Testing different framerates and ecnoding types to see how much memory it takes and how good the quality is.
@@ -71,14 +72,27 @@ A 5 second video
 encoder = MJPEGEncoder()
 time_str = strftime(f"%Y-%m-%d_%H-%M-%S", localtime())
 output_file = f"results/{time_str}_cam.mjpg"
+buffer_frames = 120 # 60 fps * 2 seconds
+output = CircularOutput(buffersize=buffer_frames)
 
-for i in range(5,0,-1):
-    print(f"Video in {i}...")
+picam0.start_recording(encoder, output)
+
+print("Phase 1: On the launchpad...")
+for i in range(10,0,-1):
+    print(f"Launch in {i}...")
     sleep(1)
-
-
-picam0.start_recording(encoder, output_file)
-
+print("Rocket Launch!")
+output.fileoutput = output_file
+output.start()
+for i in range(5,0,-1):
+    print(f"Phase 2: Rocket Flying {i}...")
+    sleep(1)
+print("Rocket landed")
+for i in range(5,0,-1):
+    print(f"Phase 3: Sitting on the ground {i}...")
+    sleep(1)
+print("End of recording")
+output.stop()
 sleep(5)
 
 picam0.stop_recording()
