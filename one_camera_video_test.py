@@ -2,13 +2,17 @@ from picamera2 import Picamera2, Preview
 from time import sleep
 from picamera2.encoders import H264Encoder, MJPEGEncoder
 from libcamera import Transform
+from time import sleep, localtime, strftime
 
-# https://datasheets.raspberrypi.com/camera/picamera2-manual.pdf page 21-23 
-# Take videos with each camera simultaneously
+"""
+Testing different framerates and ecnoding types to see how much memory it takes and how good the quality is.
+https://datasheets.raspberrypi.com/camera/picamera2-manual.pdf page 21-23 
+
+ffplay 2024-03-31_11-35-00_cam0.mjpg
+"""
 
 # create camera objects
 picam0 = Picamera2(0)
-picam1 = Picamera2(1)
 
 # start a preview window
 picam0.start_preview(Preview.QTGL,
@@ -17,7 +21,6 @@ picam0.start_preview(Preview.QTGL,
                      width=800, 
                      height=600,
                      transform=Transform(hflip=False))
-picam1.start_preview(Preview.QTGL)
 
 # Set configuration for video
 """
@@ -47,40 +50,39 @@ picam1.start_preview(Preview.QTGL)
   'size': (4608, 2592),
   'unpacked': 'SRGGB10'}]
 """
-config0 = picam0.create_video_configuration(sensor={'output_size':(2304,1296), 'bit_depth':10})
-picam0.configure(config0)
-# get the same configuration a different way
-mode1 = picam1.sensor_modes[1]
-config1 = picam1.create_video_configuration(sensor={'output_size':mode1['size'], 'bit_depth':mode1['bit_depth']})
-picam1.configure(config1)
+config = picam0.create_video_configuration(sensor={'output_size':(2304,1296), 'bit_depth':10})#,
+                                            # controls={"FrameDurationLimits": (40000,40000)}) # Lower to 25 fps
+picam0.configure(config)
 # Could always record at a lower framerate if desired (eg. 25fps)
 # config = picam2.create_video_configuration(controls={"FrameDurationLimits": (40000, 40000)})
 
+"""
+A 5 second video 
+  at ~60fps occupied
+    2.3MiB for mjpg
+    6.2 MiB for h264
+  at ~25fps occupied
+    2.6 MiB for mjpg (setting controls=FrameDuration didn't help for some reason)
+
+"""
+
 # # Can this encoder handle 2 cameras at 60fps with 1080p? Probably not.
-# encoder0 = H264Encoder(bitrate=10000000)
-# encoder1 = H264Encoder(bitrate=10000000)
-# output_file0 = "results/cam0.h264"
-# output_file1 = "results/cam1.h264"
-encoder0 = MJPEGEncoder()
-encoder1 = MJPEGEncoder()
-output_file0 = "results/cam0.mjpg"
-output_file1 = "results/cam1.mjpg"
+# encoder = H264Encoder(bitrate=10000000)
+encoder = MJPEGEncoder()
+time_str = strftime(f"%Y-%m-%d_%H-%M-%S", localtime())
+output_file = f"results/{time_str}_cam.mjpg"
 
 for i in range(5,0,-1):
     print(f"Video in {i}...")
     sleep(1)
 
-picam0.start_encoder(encoder0, output_file0)
-picam0.start()
-picam1.start_recording(encoder1, output_file1)
+
+picam0.start_recording(encoder, output_file)
 
 sleep(5)
-picam0.stop()
-picam0.stop_encoder()
-picam1.stop_recording()
 
+picam0.stop_recording()
 picam0.stop_preview()
-picam1.stop_preview()
 
 
 # For Rocket TODO: 
