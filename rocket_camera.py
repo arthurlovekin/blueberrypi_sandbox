@@ -1,6 +1,6 @@
+from picamera2 import Picamera2
 from picamera2.encoders import H264Encoder, Quality
 from picamera2.outputs import CircularOutput
-from picamera2 import Picamera2
 from time import localtime, strftime
 from pathlib import Path
 
@@ -24,8 +24,9 @@ class RocketCamera():
     def start_recording_including_buffer(self):
         self.output.fileoutput = self.output_file
         self.output.start()
+        print(f"RocketCamera: {self.name} Recording Started...")
 
     def stop_recording(self):
         self.output.stop()
         self.picam.stop_recording()
-        print(f"Saved video to {self.output_file}")
+        print(f"RocketCamera: Saved {self.name} video to {self.output_file}")
