@@ -1,29 +1,26 @@
-from picamera2 import Picamera2
-from time import sleep, localtime, strftime
-from picamera2.encoders import MJPEGEncoder
+from rocket_camera import RocketCamera
+from time import sleep
 
-time_str = strftime(f"%Y-%m-%d_%H-%M-%S", localtime())
-output_file0 = f"results/{time_str}_cam0.mjpg"
-output_file1 = f"results/{time_str}_cam1.mjpg"
+"""
+Take videos with each camera simultaneously
+https://datasheets.raspberrypi.com/camera/picamera2-manual.pdf page 21-23 
+https://samirkumardas.github.io/jmuxer/h264_player.html is a good online playback tool
+ffplay <filename> is a good commandline tool (though was playing at double speed).
+"""
+#
+print("Starting Cameras ...")
+cam0 = RocketCamera(0)
+cam1 = RocketCamera(1)
 
-picam0 = Picamera2(0)
-picam1 = Picamera2(1)
+cam0.start_recording_including_buffer()
+cam1.start_recording_including_buffer()
 
-config0 = picam0.create_video_configuration(sensor={'output_size':(2304,1296), 'bit_depth':10})
-picam0.configure(config0)
-config1 = picam1.create_video_configuration(sensor={'output_size':(2304,1296), 'bit_depth':10})
-picam1.configure(config1)
+for i in range(15,0,-1):
+    print(f"Rocket Flying {i}...")
+    sleep(1)
 
-encoder0 = MJPEGEncoder()
-encoder1 = MJPEGEncoder()
-
-picam0.start_recording(encoder0, output_file0)
-picam1.start_recording(encoder1, output_file1)
-
-sleep(5)
-picam0.stop_recording()
-picam1.stop_recording()
-
+cam0.stop_recording()
+cam1.stop_recording()
 
 # For Rocket TODO: 
 """

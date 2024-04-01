@@ -9,7 +9,8 @@ class RocketCamera():
         self.index = port_index
         self.name = name if name is not None else f"cam{port_index}"
         time_str = strftime(f"%Y-%m-%d_%H-%M-%S", localtime())
-        new_output_file = Path(Path.home(), "Videos", f"{time_str}_{self.name}.h264")
+        # new_output_file = Path(Path.home(), "Videos", f"{time_str}_{self.name}.h264")
+        new_output_file = Path("home", "arthur", "Videos", f"{time_str}_{self.name}.h264")
         self.output_file = output_file if output_file is not None else new_output_file
         self.picam = Picamera2(self.index)
 
