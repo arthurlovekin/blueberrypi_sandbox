@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Python Script that controls a rocket
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/bash -c '/usr/bin/python3 /home/arthur/sandbox/rocket_launch.py > /home/arthur/Videos/rocket_launch.log 2>&1'
+
+[Install]
+WantedBy=multi-user.target
