@@ -16,8 +16,8 @@ signal.signal(signal.SIGINT, signal_handler)
 
 print("Servo Angle Test")
 servos = [crickit.servo_1,crickit.servo_2]
-crickit.servo_1.set_pulse_width_range(min_pulse=460, max_pulse=2560)
-
+crickit.servo_1.set_pulse_width_range(min_pulse=460, max_pulse=2300)
+crickit.servo_2.set_pulse_width_range(min_pulse=470, max_pulse=2300)
 
 while True:
 	
