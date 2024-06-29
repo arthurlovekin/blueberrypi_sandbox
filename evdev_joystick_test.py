@@ -11,7 +11,7 @@ print(f"{device=}")
 print("---device capabilities---")
 
 print(device.capabilities(verbose=True))
-
+print(f"AbsInfo: {device.absinfo(evdev.ecodes.ABS_X)}")
 ## if you want without asyncio
 # for event in device.read_loop():
 #     if event.type == evdev.ecodes.EV_KEY:
