@@ -12,6 +12,13 @@ print("---device capabilities---")
 
 print(device.capabilities(verbose=True))
 print(f"AbsInfo: {device.absinfo(evdev.ecodes.ABS_X)}")
+print(f"Min: {device.absinfo(evdev.ecodes.ABS_X).min}, Max: {device.absinfo(evdev.ecodes.ABS_X).max}")
+
+# Map from value v, which lies in range [vmin, vmax], 
+# to an output that lies in range [out_min, out_max]
+def linear_map(v, vmin, vmax, out_min, out_max):
+    return (float(v)-float(vmin)) / (float(vmax)-float(vmin)) * (float(out_max) - float(out_min)) + float(out_min)
+
 ## if you want without asyncio
 # for event in device.read_loop():
 #     if event.type == evdev.ecodes.EV_KEY:
@@ -26,15 +33,19 @@ async def main(device):
             # print(f"{event.type=} {event.timestamp()} {event.code=}~{evdev.resolve_ecodes(evdev.ecodes.BTN, [event.code])} {event.value=}")
             print(f"{evdev.categorize(event)} : {event.value}") # categorize gives a timestamp and the button type
             if event.code == evdev.ecodes.BTN_TL2:
-                print("Got BTN_TL2")
+                print(f"Got BTN_TL2: {event.value}")
             elif event.code == evdev.ecodes.BTN_TR2:
-                print("Got BTN_TR2")        
+                print(f"Got BTN_TR2: {event.value}")        
         
         elif event.type == evdev.ecodes.EV_ABS:
+            abs_min = device.absinfo(evdev.ecodes.ABS_X).min
+            abs_max = device.absinfo(evdev.ecodes.ABS_X).max
             if event.code == evdev.ecodes.ABS_X:
-                print("Got ABS_X")
+                angle = linear_map(event.value, abs_min, abs_max, 0.0, 180.0)
+                print(f"ABS_X: {event.value} -> angle: {angle}")
             elif event.code == evdev.ecodes.ABS_Y:
-                print("Got ABS_Y")
+                throttle = -1.0 * linear_map(event.value, abs_min, abs_max, -1.0, 1.0)
+                print(f"ABS_Y: {event.value} -> throttle: {throttle}")
             elif event.code == evdev.ecodes.ABS_RX:
                 print("Got ABS_RX")
             print(f"{evdev.categorize(event)} : {event.value}")
