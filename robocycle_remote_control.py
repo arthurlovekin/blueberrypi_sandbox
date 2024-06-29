@@ -1,7 +1,6 @@
 import asyncio
 import evdev
 
-import time
 import signal
 import sys
 from adafruit_crickit import crickit
@@ -13,23 +12,28 @@ def linear_map(v, vmin, vmax, out_min, out_max):
 
 ## Concurrently handle joystick inputs
 async def main(device):
+    global motors_enabled
     async for event in device.async_read_loop():
-        if (event.code == evdev.ecodes.BTN_TL2 or 
-            event.code == evdev.ecodes.BTN_TR2): # Enable
-            motors_enabled = bool(event.value)
-            print(f"BTN_TL2 or BTN_TR2: {event.value} -> {motors_enabled=}")
-        if motors_enabled:
-            if event.code == evdev.ecodes.ABS_X: # front servo (steering)
-                crickit.servo_1.angle = linear_map(event.value, abs_x_min, abs_x_max, 0.0, 180.0)
-                print(f"ABS_X: {event.value} -> angle: {crickit.servo_1.angle}")
-            elif event.code == evdev.ecodes.ABS_Y: # DC Motor (speed)
-                motor_1.throttle = -1.0*linear_map(event.value, abs_y_min, abs_y_max, -1.0,1.0)
-                print(f"ABS_Y: {event.value} -> throttle: {motor_1.throttle}")
-            elif event.code == evdev.ecodes.ABS_RX: # Body Servo
-                crickit.servo_2.angle = linear_map(event.value, abs_Rx_min, abs_Rx_max, 0.0, 180.0)
-                print(f"ABS_RX: {event.value} -> angle: {crickit.servo_2.angle}")
-        else:
-            print("Motors disabled. Inputs not being read")
+        if event.type == evdev.ecodes.EV_KEY:
+            if (event.code == evdev.ecodes.BTN_TL2 or 
+                event.code == evdev.ecodes.BTN_TR2): # Enable
+                motors_enabled = bool(event.value)
+                print(f"BTN_TL2 or BTN_TR2: {event.value} -> {motors_enabled=}")
+            elif(event.code == evdev.ecodes.BTN_A):
+                print(f"BTN_B") #A button is actually B on Nintendo Switch
+        elif event.type == evdev.ecodes.EV_ABS: # need to sort by type because there is ambiguity in codes
+            if motors_enabled:
+                if event.code == evdev.ecodes.ABS_X: # front servo (steering)
+                    crickit.servo_1.angle = linear_map(event.value, abs_x_min, abs_x_max, 0.0, 180.0)
+                    print(f"ABS_X: {event.value} -> angle: {crickit.servo_1.angle}")
+                elif event.code == evdev.ecodes.ABS_Y: # DC Motor (speed)
+                    motor_1.throttle = -1.0*linear_map(event.value, abs_y_min, abs_y_max, -1.0,1.0)
+                    print(f"ABS_Y: {event.value} -> throttle: {motor_1.throttle}")
+                elif event.code == evdev.ecodes.ABS_RX: # Body Servo
+                    crickit.servo_2.angle = linear_map(event.value, abs_Rx_min, abs_Rx_max, 0.0, 180.0)
+                    print(f"ABS_RX: {event.value} -> angle: {crickit.servo_2.angle}")
+            else:
+                print("Motors disabled. Inputs not being read")
 
 if __name__ == "__main__":
     motors_enabled = False
