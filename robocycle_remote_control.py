@@ -27,7 +27,14 @@ async def main(device):
                     crickit.servo_1.angle = linear_map(event.value, abs_x_min, abs_x_max, 0.0, 180.0)
                     print(f"ABS_X: {event.value} -> angle: {crickit.servo_1.angle}")
                 elif event.code == evdev.ecodes.ABS_Y: # DC Motor (speed)
-                    motor_1.throttle = -1.0*linear_map(event.value, abs_y_min, abs_y_max, -1.0,1.0)
+                    throttle = -1.0*linear_map(event.value, abs_y_min, abs_y_max, -1.0,1.0)
+                    # avoid sending low throttles
+                    if abs(throttle) < 0.3:
+                        if abs(throttle) < 0.1:
+                            throttle = 0.0
+                        else:
+                            throttle = 0.3 * abs(throttle)/throttle
+                    motor_1.throttle = throttle
                     print(f"ABS_Y: {event.value} -> throttle: {motor_1.throttle}")
                 elif event.code == evdev.ecodes.ABS_RX: # Body Servo
                     crickit.servo_2.angle = linear_map(event.value, abs_Rx_min, abs_Rx_max, 0.0, 180.0)
